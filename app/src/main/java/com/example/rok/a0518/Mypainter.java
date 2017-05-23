@@ -104,11 +104,13 @@ public class Mypainter extends View{
 
                     }
                     else if(operation == 2){
+                            oldx = x;
+                            oldy = y;
+                            mCanvas.drawBitmap(img, 10, 10, mPaint);
+                            invalidate();
 
-                        oldx = x;
-                        oldy = y;
-                        mCanvas.drawBitmap(img, 10, 10, mPaint);
-                        invalidate();
+
+
 
                     }
                     else if(operation == 3){
@@ -124,7 +126,6 @@ public class Mypainter extends View{
                         mCanvas.drawBitmap(img, oldx, oldy, mPaint);
 
                         invalidate();
-                        screw();
                     }
                     else {
                         oldx = x;
@@ -176,6 +177,8 @@ public class Mypainter extends View{
     }
     public void clear(){
         mBitmap.eraseColor(Color.WHITE);
+        setOperation(0);
+        mCanvas.skew(0,0);
         invalidate();
 
 
@@ -188,7 +191,6 @@ public class Mypainter extends View{
 
         
         mCanvas.skew(skewnum,0);
-        skewnum = 5f;
     }
     public void bluring(MenuItem item,int value){
         if(value == 1){

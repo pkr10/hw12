@@ -29,7 +29,7 @@ public class Paint extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_paint);
         mypainter = (Mypainter) findViewById(R.id.mypainter);
-        checkPermission();
+        checkpermission();
         c1 = (CheckBox)findViewById(R.id.checkBox);
         c1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -71,17 +71,17 @@ public class Paint extends AppCompatActivity {
         b4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mypainter.setOperation(4);
+                mypainter.screw();
             }
         });
         b5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mypainter.Save(getExternalPath() + "MyCanvas.jpeg")) {
-                    Toast.makeText(getApplicationContext(), "저장완료!", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "저장실패!", Toast.LENGTH_LONG).show();
-                }
+                String path = getExternalPath();
+                mypainter.Save(path + "canvas.jpeg");
+
+                Toast.makeText(getApplicationContext(), "저장완료!", Toast.LENGTH_LONG).show();
+
 
             }
         });
@@ -90,7 +90,8 @@ public class Paint extends AppCompatActivity {
             public void onClick(View v) {
 
                 mypainter.clear();
-                mypainter.Open(getExternalPath()+"MyCanvas.jpeg");
+                String path = getExternalPath();
+                mypainter.Open(path+"canvas.jpeg");
                 Toast.makeText(getApplicationContext(),"오픈 완료",Toast.LENGTH_SHORT).show();
             }
         });
@@ -170,31 +171,42 @@ public class Paint extends AppCompatActivity {
         }
     }
 
+    private void checkpermission() {
+
+        int permissioninfo = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permissioninfo == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getApplicationContext(), "sd카드 쓰기권한있음", Toast.LENGTH_SHORT).show();
+        } else {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                Toast.makeText(this, "권한 설명", Toast.LENGTH_SHORT).show();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
+            }
+        }
+    }
+
     public String getExternalPath() {
         String sdPath = "";
         String ext = Environment.getExternalStorageState();
         if (ext.equals(Environment.MEDIA_MOUNTED)) {
             sdPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
-            Log.d("PATH", sdPath);
-        } else {
-            sdPath = getFilesDir() + "";
-            Toast.makeText(getApplicationContext(), sdPath, Toast.LENGTH_LONG).show();
-        }
+
+        } else
+            sdPath = getFilesDir() + ";" +
+                    "";
+        Toast.makeText(getApplicationContext(), sdPath, Toast.LENGTH_SHORT).show();
         return sdPath;
     }
-
-    void checkPermission() {
-        int permissioninfo = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permissioninfo == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(getApplicationContext(), "SDCard 쓰기 권한 있음", Toast.LENGTH_SHORT).show();
-        } else {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                Toast.makeText(getApplicationContext(), "권한의 필요성 설명", Toast.LENGTH_SHORT).show();
-                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
-            }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        String str = null;
+        if (requestCode == 100) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                str = "Sdcard쓰기권한 승인";
+            else str = "SD card 쓰기권한 거부";
+            Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }
 
