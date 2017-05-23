@@ -31,7 +31,6 @@ public class Mypainter extends View{
     Paint mPaint = new Paint();
     int checkable =0;
     int operation = 0;
-    int menu = 0;
     float[] matrixarray = {
             2f,0f,0f,0f,-25f,
             0f,2f,0f,0f,-25f,
@@ -40,7 +39,8 @@ public class Mypainter extends View{
     };
     ColorMatrix matrix = new ColorMatrix(matrixarray);
 
-    BlurMaskFilter blur =new BlurMaskFilter(15,BlurMaskFilter.Blur.INNER);
+
+    BlurMaskFilter blur =new BlurMaskFilter(100,BlurMaskFilter.Blur.INNER);
     public Mypainter(Context context) {
         super(context);
         mPaint.setColor(Color.BLACK);
@@ -89,9 +89,7 @@ public class Mypainter extends View{
         int x = (int)event.getX();
         int y = (int)event.getY();
         Bitmap img = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher);
-        Bitmap smallimage =Bitmap.createScaledBitmap(img,img.getWidth()/2,img.getHeight()/2,false);
-
-
+        Bitmap bigimg  = Bitmap.createScaledBitmap(img,(int)(img.getWidth()*1.5),(int)(img.getHeight()*1.5),false);
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
 
 
@@ -99,24 +97,39 @@ public class Mypainter extends View{
                     if (operation == 1) {
                         oldx = x;
                         oldy = y;
-                        mCanvas.drawBitmap(smallimage, oldx, oldy, mPaint);
+                        mCanvas.drawBitmap(img, oldx, oldy, mPaint);
                         invalidate();
                         mCanvas.rotate(30,mBitmap.getWidth()/2,mBitmap.getHeight()/2);
 
 
                     }
                     else if(operation == 2){
+
                         oldx = x;
                         oldy = y;
-                        mCanvas.drawBitmap(smallimage, 10, 10, mPaint);
+                        mCanvas.drawBitmap(img, 10, 10, mPaint);
                         invalidate();
 
                     }
+                    else if(operation == 3){
+                        oldx = x;
+                        oldy = y;
 
+                        mCanvas.drawBitmap(bigimg, oldx, oldy, mPaint);
+                        invalidate();
+                    }
+                    else if(operation == 4){
+                        oldx = x;
+                        oldy = y;
+                        mCanvas.drawBitmap(img, oldx, oldy, mPaint);
+
+                        invalidate();
+                        screw();
+                    }
                     else {
                         oldx = x;
                         oldy = y;
-                        mCanvas.drawBitmap(smallimage, oldx, oldy, mPaint);
+                        mCanvas.drawBitmap(img, oldx, oldy, mPaint);
                         invalidate();
                     }
                 }
@@ -162,44 +175,43 @@ public class Mypainter extends View{
         this.operation = operation;
     }
     public void clear(){
-        mBitmap.eraseColor(Color.YELLOW);
+        mBitmap.eraseColor(Color.WHITE);
         invalidate();
 
 
         operation =0;
     }
 
-    public void scale(){
-        mCanvas.scale(1.5f,1.5f);
-        invalidate();
 
-    }
     public void screw(){
-        mCanvas.skew(0.2f,0);
-        invalidate();
+        float skewnum = 0.2f;
+
+        
+        mCanvas.skew(skewnum,0);
+        skewnum = 5f;
     }
     public void bluring(MenuItem item,int value){
-        if(item.isChecked() == true){
+        if(value == 1){
             mPaint.setMaskFilter(blur);
             invalidate();
         }
         else{
-            mPaint.setFilterBitmap(false);
+            mPaint.setMaskFilter(null);
             invalidate();
         }
     }
     public void coloring(MenuItem item,int value){
-        if(item.isChecked() == true){
+        if(value == 1){
             mPaint.setColorFilter(new ColorMatrixColorFilter(matrix));
             invalidate();
         }
         else{
-            mPaint.setFilterBitmap(false);
+            mPaint.setColorFilter(null);
             invalidate();
         }
     }
     public void Bigpen(MenuItem item,int value){
-        if(item.isChecked() ==true){
+        if(value == 1){
             mPaint.setStrokeWidth(5);
             invalidate();
         }
@@ -209,22 +221,40 @@ public class Mypainter extends View{
 
         }
     }
-    public boolean Save(String file_name) { try {
-        FileOutputStream out = new FileOutputStream(file_name);
-        mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out); out.close();
-        Toast.makeText(getContext(),"저장완료",Toast.LENGTH_SHORT).show();
-        return true;
-    } catch (FileNotFoundException e) { Log.e("FileNotFoundException", e.getMessage());
-    } catch (IOException e) { Log.e("IOException", e.getMessage());
-    }
-        return false;
-    }
 
     public void setRed(){
         mPaint.setColor(Color.RED);
     }
     public void setBlue(){
         mPaint.setColor(Color.BLUE);
+    }
+    public boolean Save(String file_name) {
+        try {
+            Toast.makeText(getContext(), "저장되었습니다!!", Toast.LENGTH_LONG).show();
+            FileOutputStream out = new FileOutputStream(file_name);
+            mBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
+            out.close();
+            return true;
+        } catch (FileNotFoundException e) {
+            Log.e("FileNotFoundException", e.getMessage());
+        } catch (IOException e) {
+            Log.e("IOException", e.getMessage());
+        }
+        return false;
+    }
+
+    public void Open(String file_name) {
+        try {
+            String imgpath = file_name;
+            Bitmap bm = BitmapFactory.decodeFile(imgpath);
+            bm = Bitmap.createScaledBitmap(bm, bm.getWidth() / 2, bm.getHeight() / 2, false);
+            mCanvas.drawBitmap(bm, mCanvas.getWidth() / 2 - bm.getWidth() / 2, mCanvas.getHeight() / 2 - bm.getHeight() / 2, mPaint);
+            invalidate();
+            Toast.makeText(getContext(), "load ok", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "파일이 없습니다", Toast.LENGTH_SHORT).show();
+        }
     }
 
 

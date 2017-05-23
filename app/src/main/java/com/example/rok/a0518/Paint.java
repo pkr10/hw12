@@ -1,7 +1,14 @@
 package com.example.rok.a0518;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -13,16 +20,16 @@ import android.widget.Toast;
 
 public class Paint extends AppCompatActivity {
     CheckBox c1;
-    Button b1,b2,b3,b4;
+    Button b1,b2,b3,b4,b5,b6;
     int value = 0;
     Mypainter mypainter;
-    String filename = "1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_paint);
         mypainter = (Mypainter) findViewById(R.id.mypainter);
+        checkPermission();
         c1 = (CheckBox)findViewById(R.id.checkBox);
         c1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -41,6 +48,8 @@ public class Paint extends AppCompatActivity {
         b2 = (Button)findViewById(R.id.button7);
         b3 = (Button)findViewById(R.id.button6);
         b4 = (Button)findViewById(R.id.button5);
+        b5 = (Button)findViewById(R.id.button2);
+        b6 = (Button)findViewById(R.id.button3);
         b1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -53,8 +62,41 @@ public class Paint extends AppCompatActivity {
                 mypainter.setOperation(2);
             }
         });
+        b3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mypainter.setOperation(3);
+            }
+        });
+        b4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mypainter.setOperation(4);
+            }
+        });
+        b5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mypainter.Save(getExternalPath() + "MyCanvas.jpeg")) {
+                    Toast.makeText(getApplicationContext(), "저장완료!", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "저장실패!", Toast.LENGTH_LONG).show();
+                }
+
+            }
+        });
+        b6.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                mypainter.clear();
+                mypainter.Open(getExternalPath()+"MyCanvas.jpeg");
+                Toast.makeText(getApplicationContext(),"오픈 완료",Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -70,19 +112,43 @@ public class Paint extends AppCompatActivity {
 
         switch(item.getItemId()){
             case R.id.bluring:
-                value = 1;
-                item.setChecked(true);
-                mypainter.bluring(item,value);
+
+                if(item.isChecked()){
+                    item.setChecked(false);
+                    value = 0;
+                    mypainter.bluring(item,value);
+                }
+                else{
+                    value = 1;
+                    item.setChecked(true);
+                    mypainter.bluring(item,value);
+                }
                 break;
             case R.id.coloring:
-                value = 1;
-                item.setChecked(true);
-                mypainter.coloring(item,value);
+                if(item.isChecked()){
+                    value = 0;
+                    item.setChecked(false);
+                    mypainter.coloring(item,value);
+                }
+                else {
+
+
+                    value = 1;
+                    item.setChecked(true);
+                    mypainter.coloring(item, value);
+                }
                 break;
             case R.id.bigpen:
-                value =1;
-                item.setChecked(true);
-                mypainter.Bigpen(item,value);
+                if(item.isChecked()) {
+                    value = 0;
+                    item.setChecked(false);
+                    mypainter.Bigpen(item,value);
+                }
+                else{
+                    value = 1;
+                    item.setChecked(true);
+                    mypainter.Bigpen(item, value);
+                }
                 break;
             case R.id.RED:
                 mypainter.setRed();
@@ -98,16 +164,37 @@ public class Paint extends AppCompatActivity {
         switch(view.getId()){
             case R.id.button4:
                 mypainter.clear();
+                Toast.makeText(getApplicationContext(),"eraser",Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.button5:
-                mypainter.screw();
-                break;
-            case R.id.button6:
-                mypainter.scale();
-                break;
-            case R.id.button2:
-                mypainter.Save(filename);
-                break;
+
+        }
+    }
+
+    public String getExternalPath() {
+        String sdPath = "";
+        String ext = Environment.getExternalStorageState();
+        if (ext.equals(Environment.MEDIA_MOUNTED)) {
+            sdPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
+            Log.d("PATH", sdPath);
+        } else {
+            sdPath = getFilesDir() + "";
+            Toast.makeText(getApplicationContext(), sdPath, Toast.LENGTH_LONG).show();
+        }
+        return sdPath;
+    }
+
+    void checkPermission() {
+        int permissioninfo = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permissioninfo == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(getApplicationContext(), "SDCard 쓰기 권한 있음", Toast.LENGTH_SHORT).show();
+        } else {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                Toast.makeText(getApplicationContext(), "권한의 필요성 설명", Toast.LENGTH_SHORT).show();
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
+            }
         }
     }
 }
+
